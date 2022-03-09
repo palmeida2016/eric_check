@@ -1,0 +1,10 @@
+1. Create some filter object with python script (slice)
+
+from vtk.numpy_interface import dataset_adapter as dsa
+import numpy as np
+
+vtk_data = servermanager.Fetch(slice)
+data = dsa.WrapDataObject(vtk_data)
+
+coords = np.array(data.GetPoints().GetArrays()[0])
+phi = np.array(data.PointData['phi'].GetArrays()[0])

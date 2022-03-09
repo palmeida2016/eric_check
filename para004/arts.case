@@ -1,0 +1,22 @@
+FORMAT
+type: ensight gold
+GEOMETRY
+model: 1 1 geometry
+VARIABLE
+scalar per node: U U
+scalar per node: V V
+scalar per node: W W
+scalar per node: P P
+scalar per node: Uf Uf
+scalar per node: TKE TKE
+scalar per node: Diss Diss
+scalar per node: Prod Prod
+scalar per node: Trans Trans
+scalar per node: G G
+scalar per node: GT GT
+TIME
+time set: 1
+number of steps: 1
+filename start number: 1
+filename increment: 1
+time values: 0.00000E+00
