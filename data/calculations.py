@@ -2,6 +2,7 @@
 import numpy as np
 import csv
 from struct import unpack
+from matplotlib import pyplot as plt
 
 # Import Chodsp Class
 class Reader:
@@ -140,22 +141,39 @@ class Calculator:
         # Return
         return out
     
+    def get_u_mean(self):
+        # Calculate means
+        means = self.data['U'].mean(axis=(0,2))
+
+        # Allocate space for output
+        out = np.ones(self.data['U'].shape)
+
+        # Set means to array
+        for i in range(len(means)):
+            out[:,i,:] = means[i]
+
+        return out 
     def compute(self):
         self.TKE = self.TKE()
         self.prod = self.prod()
         self.diss = self.diss()
         self.trans = self.trans()
         
-        print(self.data.keys())
-        print(self.data['Prod'][1,1,:])
-        print(self.prod[1,1,:])
+        plt.figure(1)
+        plt.imshow(self.prod[:,5,:])
+        plt.figure(2)
+        plt.imshow(np.array(self.data['Prod'][:,5,:], dtype=np.float64))
+        plt.show()
+        print(type(self.prod[1,1,1]))
+        print(type(self.data['Prod'][1,1,1]))
         
 
     def TKE(self):
         return (1/2) * (self.data['Uf']**2 + self.data['V']**2 + self.data['W']**2)
 
     def prod(self):
-        return -1 * self.data['Uf'] * self.data['V'] * self.ddy(self.data['U'])
+        u = self.get_u_mean()
+        return -1 * self.data['Uf'] * self.data['V'] * self.ddy(u)
 
     def diss(self):
         return -2 * self.nu * self.sij2()
