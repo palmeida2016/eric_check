@@ -3,6 +3,7 @@ import numpy as np
 import csv
 from struct import unpack
 from matplotlib import pyplot as plt
+import time
 
 # Import Chodsp Class
 class Reader:
@@ -153,19 +154,49 @@ class Calculator:
             out[:,i,:] = means[i]
 
         return out 
+
+    def dotU(self):
+        return self.data['Uf']**2 + self.data['V']**2 + self.data['W']**2
+
+    def trans1(self):
+        return - self.ddx(self.data['Uf'] * self.data['P']) + self.ddy(self.data['V'] * self.data['P']) + self.ddz(self.data['W'] * self.data['P'])
+
+    def trans2(self):
+        dotU = self.dotU()
+        sij = self.sij()
+
+        #us1 = self.data['Uf'] * sij[0,0,:,:,:] + self.data['V'] * sij[0,1,:,:,:] + self.data['W'] * sij[0,2,:,:,:]
+        #us2 = self.data['Uf'] * sij[1,0,:,:,:] + self.data['V'] * sij[1,1,:,:,:] + self.data['W'] * sij[1,2,:,:,:]
+        #us3 = self.data['Uf'] * sij[2,0,:,:,:] + self.data['V'] * sij[2,1,:,:,:] + self.data['W'] * sij[2,2,:,:,:]
+
+        us1 = self.data['Uf'] * sij[0,0,:,:,:] + self.data['V'] * sij[1,0,:,:,:] + self.data['W'] * sij[2,0,:,:,:]
+        us2 = self.data['Uf'] * sij[0,1,:,:,:] + self.data['V'] * sij[1,1,:,:,:] + self.data['W'] * sij[2,1,:,:,:]
+        us3 = self.data['Uf'] * sij[0,2,:,:,:] + self.data['V'] * sij[1,2,:,:,:] + self.data['W'] * sij[2,2,:,:,:]
+
+        xterm = -2 * self.nu * us1 + (1/2) * dotU * self.data['Uf']
+        yterm = -2 * self.nu * us2 + (1/2) * dotU * self.data['V']
+        zterm = -2 * self.nu * us3 + (1/2) * dotU * self.data['W']
+
+        return self.ddx(xterm) + self.ddy(yterm) + self.ddz(zterm)
+
     def compute(self):
         self.TKE = self.TKE()
         self.prod = self.prod()
         self.diss = self.diss()
+        start = time.time()
         self.trans = self.trans()
+        end = time.time()
+        print(f'Time: {end-start}')
         
+        print(self.trans.shape)
+        print(self.trans[:,1,1])
+        print(self.data['Trans'][:,1,1])
+
         plt.figure(1)
-        plt.imshow(self.prod[:,5,:])
+        plt.imshow(self.trans[:,5,:])
         plt.figure(2)
-        plt.imshow(np.array(self.data['Prod'][:,5,:], dtype=np.float64))
+        plt.imshow(np.array(self.data['Trans'][:,5,:], dtype=np.float64))
         plt.show()
-        print(type(self.prod[1,1,1]))
-        print(type(self.data['Prod'][1,1,1]))
         
 
     def TKE(self):
@@ -179,10 +210,7 @@ class Calculator:
         return -2 * self.nu * self.sij2()
 
     def trans(self):
-        # Allocate space
-        out = np.zeros(self.data['Uf'].shape)
-
-        return out
+        return self.trans1() + self.trans2()
 
 def main():
     # Read data
